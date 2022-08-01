@@ -1,17 +1,16 @@
 import { ethers } from "ethers";
-import { ChangeEvent, useState } from "react";
-import { MetaMaskInpageProvider } from "@metamask/providers";
+import { ChangeEvent, useEffect, useState } from "react";
 
 export default function Home() {
   const [text, setText] = useState("");
+  const [string, setString] = useState<string>("");
   const [isConnected, setIsConnected] = useState(false);
   const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner>();
 
   async function connect() {
     if (typeof window.ethereum !== "undefined") {
       try {
-        const ethereum = window.ethereum as MetaMaskInpageProvider;
-        await ethereum.request({ method: "eth_requestAccounts" });
+        await window.ethereum.request({ method: "eth_requestAccounts" });
         setIsConnected(true);
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         setSigner(provider.getSigner());
@@ -54,14 +53,22 @@ export default function Home() {
         {
           inputs: [],
           name: "show",
-          outputs: [],
+          outputs: [
+            {
+              internalType: "string",
+              name: "",
+              type: "string",
+            },
+          ],
           stateMutability: "view",
           type: "function",
         },
       ];
       const contract = new ethers.Contract(contractAddress, abi, signer);
       try {
-        await contract.show();
+        // useState
+        const val = await contract.show();
+        setString(val);
       } catch (error) {
         console.log(error);
       }
@@ -99,7 +106,13 @@ export default function Home() {
         {
           inputs: [],
           name: "show",
-          outputs: [],
+          outputs: [
+            {
+              internalType: "string",
+              name: "",
+              type: "string",
+            },
+          ],
           stateMutability: "view",
           type: "function",
         },
@@ -110,24 +123,25 @@ export default function Home() {
       } catch (error) {
         console.log(error);
       }
+      setText("");
     }
     return null;
   };
   const handleText = (e: ChangeEvent<HTMLInputElement>) => {
     setText(e.target.value);
   };
-  console.log(text);
 
   return (
     <div className="flex max-w-sm justify-center mx-auto pt-20 flex-wrap">
-      <input
-        className="border border-black w-full p-2"
-        type="text"
-        onChange={(e) => handleText(e)}
-        value={text}
-      />
       {isConnected ? (
         <>
+          <h1 className="text-3xl font-bold ">{string}</h1>
+          <input
+            className="border border-black w-full p-2 mt-5"
+            type="text"
+            onChange={(e) => handleText(e)}
+            value={text}
+          />
           <button
             className="flex justify-center items-center w-[100px] py-2 bg-black text-white mt-3 mr-2"
             onClick={() => show()}
